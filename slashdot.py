@@ -109,10 +109,10 @@ def main():
         while True:
             loaded_comms = soup.find("span", attrs={"class": "loadedcommentcnt"})
             total_comms = soup.find("span", attrs={"class": "totalcommentcnt"})
-            if loaded_comms.text == total_comms.text:
+            if int(total_comms.text) - int(loaded_comms.text) <= 2:
                 break
             driver.find_element_by_id("more_comments_button").click()
-            WebDriverWait(driver, timeout=10).until(EC.presence_of_element_located((By.ID, "fhft")))
+            WebDriverWait(driver, timeout=40).until(EC.presence_of_element_located((By.ID, "fhft")))
             soup = BeautifulSoup(driver.page_source, "html.parser")
             time.sleep(1)
 
