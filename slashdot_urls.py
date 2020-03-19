@@ -36,6 +36,9 @@ def main():
     
     page_num = 0
     
+    kwd_match = lambda kwd: re.compile(f"{'|'.join(kwd)}", flags=re.IGNORECASE).search
+    keywords = ['covid', 'coronavirus', 'wuhan', 'ncov']
+    
     url_dict = {}
     while True:
         stop_loop = False
@@ -69,9 +72,12 @@ def main():
             if date_obj < '2020-01-19':
                 stop_loop = True
                 break
+            
+            story_url = title_tag.find("a")['href']
+            if not kwd_match(keywords)(story_url):
+                continue
 
             print(f"\t{date_obj}")
-            story_url = title_tag.find("a")['href']
             url_dict[title_id] = f"https:{story_url}"
         
         if stop_loop:
@@ -82,7 +88,8 @@ def main():
         time.sleep(4)
     
     driver.quit()
-    print("Writing {} key-value pairs to json file...")
+
+    print("Writing dict to json file...")
     with open("slashdot_urls.json", 'w') as outfile:
         json.dump(url_dict, outfile, indent=4)
 

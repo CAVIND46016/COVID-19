@@ -50,18 +50,10 @@ def main():
     driver = get_browser(headless=False, incognito=True)
 
     clean_text = lambda txt: re.sub(r'\s+', ' ', " ".join(txt.strip().splitlines()))
-    kwd_match = lambda kwd: re.compile(f"{'|'.join(kwd)}", flags=re.IGNORECASE).search
     
-    keywords = ['covid', 'coronavirus', 'wuhan', 'ncov']
-    
-    if not keywords:
-        filtered_url = all_urls.copy()
-    else:
-        filtered_url = {k:v for k, v in all_urls.items() if kwd_match(keywords)(v)}
-    
-    length_of_url = len(filtered_url.keys())
+    length_of_url = len(all_urls.keys())
 
-    for idx, (title_id, page_url) in enumerate(filtered_url.items()):
+    for idx, (title_id, page_url) in enumerate(all_urls.items()):
         print(f"Processing url {idx+1} of {length_of_url}...\n\t{page_url}")
 
         try:
