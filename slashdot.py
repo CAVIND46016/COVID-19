@@ -59,19 +59,11 @@ def get_browser(
     if not dev_shm_usage:
         chrome_options.add_argument("--disable-dev-shm-usage")
 
-    return webdriver.Chrome(
-        executable_path="/path/to/chromedriver",
-        options=chrome_options
-    )
+    return webdriver.Chrome(executable_path="/path/to/chromedriver", options=chrome_options)
 
 
 def main():
-    conn = psycopg2.connect(
-        host=HOST,
-        database=DATABASE,
-        user=USER,
-        password=PASSWORD
-    )
+    conn = psycopg2.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD)
     cur = conn.cursor()
 
     print("Reading slashdot url's...")
@@ -80,9 +72,7 @@ def main():
 
     driver = get_browser(headless=False, incognito=True)
 
-    clean_text = lambda txt: re.sub(
-        r"\s+", " ", " ".join(txt.strip().splitlines())
-    )
+    clean_text = lambda txt: re.sub(r"\s+", " ", " ".join(txt.strip().splitlines()))
 
     length_of_url = len(all_urls.keys())
 
@@ -100,9 +90,7 @@ def main():
             continue
 
         WebDriverWait(driver, timeout=40).until(
-            expected_conditions.presence_of_element_located(
-                (By.ID, "fhft")
-            )
+            expected_conditions.presence_of_element_located((By.ID, "fhft"))
         )
         soup = BeautifulSoup(driver.page_source, "html.parser")
 
@@ -119,9 +107,7 @@ def main():
             tags = None
 
         time_tag = soup.find("time", attrs={"id": f"fhtime-{title_id}"})
-        timestamp_obj = datetime.strptime(
-            time_tag["datetime"], "on %A %B %d, %Y @%I:%M%p"
-        )
+        timestamp_obj = datetime.strptime(time_tag["datetime"], "on %A %B %d, %Y @%I:%M%p")
 
         posted_by_tag = soup.find("span", attrs={"class": "story-byline"})
         posted_by = clean_text(posted_by_tag.text).split("on")[0].replace("Posted by ", "").strip()
@@ -144,9 +130,7 @@ def main():
                 break
             driver.find_element_by_id("more_comments_button").click()
             WebDriverWait(driver, timeout=40).until(
-                expected_conditions.presence_of_element_located(
-                    (By.ID, "fhft")
-                )
+                expected_conditions.presence_of_element_located((By.ID, "fhft"))
             )
             soup = BeautifulSoup(driver.page_source, "html.parser")
             time.sleep(1)
@@ -158,16 +142,8 @@ def main():
         move.click_and_hold(element).move_by_offset(400, 0).release().perform()
         time.sleep(1)
 
-        comments = soup.find(
-            "ul",
-            attrs={
-                "id": "commentlisting"
-            }
-        ).find_all(
-            "div",
-            attrs={
-                "id": re.compile(r"comment_\d+")
-            }
+        comments = soup.find("ul", attrs={"id": "commentlisting"}).find_all(
+            "div", attrs={"id": re.compile(r"comment_\d+")}
         )
         for _, comment in enumerate(comments):
             comment_body = comment.find("div", attrs={"id": re.compile(r"comment_body_\d+")})
@@ -202,7 +178,7 @@ def main():
                     funny = 1
 
                 query = """
-                        INSERT INTO comments(id, story_id, comment, 
+                        INSERT INTO comments(id, story_id, comment,
                         commented_by, score, insightful, informative,
                         interesting, funny)
                         SELECT sub_query.* FROM
@@ -220,7 +196,7 @@ def main():
                     insightful,
                     informative,
                     interesting,
-                    funny
+                    funny,
                 )
                 cur.execute(query, data)
 
