@@ -52,10 +52,7 @@ def get_browser(
     if not dev_shm_usage:
         chrome_options.add_argument("--disable-dev-shm-usage")
 
-    return webdriver.Chrome(
-        executable_path="/path/to/chromedriver",
-        options=chrome_options
-    )
+    return webdriver.Chrome(executable_path="/path/to/chromedriver", options=chrome_options)
 
 
 def main():
@@ -64,7 +61,7 @@ def main():
     page_num = 0
 
     kwd_match = lambda kwd: re.compile(f"{'|'.join(kwd)}", flags=re.IGNORECASE).search
-    keywords = ['covid', 'coronavirus', 'wuhan', 'ncov']
+    keywords = ["covid", "coronavirus", "wuhan", "ncov"]
 
     url_dict = {}
     while True:
@@ -83,23 +80,12 @@ def main():
             continue
 
         WebDriverWait(driver, timeout=40).until(
-            expected_conditions.presence_of_element_located(
-                (
-                    By.CLASS_NAME, "paginate")
-            )
+            expected_conditions.presence_of_element_located((By.CLASS_NAME, "paginate"))
         )
         soup = BeautifulSoup(driver.page_source, "html.parser")
 
-        story_list = soup.find(
-            "div",
-            attrs={
-                "id": "firehoselist"
-            }
-        ).find_all(
-            "article",
-            attrs={
-                "id": re.compile("firehose-")
-            }
+        story_list = soup.find("div", attrs={"id": "firehoselist"}).find_all(
+            "article", attrs={"id": re.compile("firehose-")}
         )
 
         for story in story_list:
@@ -107,17 +93,17 @@ def main():
             if not title_tag:
                 continue
 
-            title_id = title_tag['id'].replace("title-", "")
+            title_id = title_tag["id"].replace("title-", "")
             time_tag = story.find("time", attrs={"id": f"fhtime-{title_id}"})
-            date_obj = datetime.strptime(
-                time_tag['datetime'], "on %A %B %d, %Y @%I:%M%p"
-            ).strftime("%Y-%m-%d")
+            date_obj = datetime.strptime(time_tag["datetime"], "on %A %B %d, %Y @%I:%M%p").strftime(
+                "%Y-%m-%d"
+            )
 
-            if date_obj < '2020-01-19':
+            if date_obj < "2020-01-19":
                 stop_loop = True
                 break
 
-            story_url = title_tag.find("a")['href']
+            story_url = title_tag.find("a")["href"]
             if not kwd_match(keywords)(story_url):
                 continue
 
@@ -133,7 +119,7 @@ def main():
     driver.quit()
 
     print("Writing dict to json file...")
-    with open("slashdot_urls.json", 'w') as outfile:
+    with open("slashdot_urls.json", "w") as outfile:
         json.dump(url_dict, outfile, indent=4)
 
     print("DONE!!!")
